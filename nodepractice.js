@@ -3,32 +3,35 @@
 // fs.writeFileSync('hello.txt','hello from node.js')
 
 const http = require('http')
+const fs = require('fs')
 const server = http.createServer((req, res) => {
-    console.log(req.url, req.method, req.headers)
-    //process.exit()
     res.setHeader('Content-Type', 'text/html')
-    // res.write('<html>')
-    // res.write('<head><title>Node title</title></head>')
-    // res.write('<body>Hello there</body>')
-    // res.write('</html>')
-    if(req.url == '/home'){
-    res.write('<html>')
-    res.write('<head><title>Node title</title></head>')
-    res.write('<body>Welcome Home</body>')
-    res.write('</html>')
+    if(req.url === '/'){
+        fs.readFile('message.txt', {encoding: 'utf-8'}, (err, data) => {
+            console.log(data);
+            res.write('<html>')
+            res.write('<head><title>Node title</title></head>')
+            res.write(`<body>${data}</body>`)
+            res.write('<body><form action="/message" method="POST"><input type="text" name="message"><button type="submit">Send</button></form></body>')
+            res.write('</html>')
+            return res.end()
+        })
     }
-    if(req.url == '/about'){
-        res.write('<html>')
-        res.write('<head><title>Node title</title></head>')
-        res.write('<body>Welcome to About Us page</body>')
-        res.write('</html>')
-        }
-    if(req.url == '/node'){
-    res.write('<html>')
-    res.write('<head><title>Node title</title></head>')
-    res.write('<body>Welcome to my Node Js project</body>')
-    res.write('</html>')
+    else if(req.url === '/message' && req.method === 'POST'){
+        const body = []
+        req.on('data', (chunk) => {
+            console.log(chunk)
+            body.push(chunk)
+        })
+        return req.on('end', () => {
+            const parsedBody = Buffer.concat(body).toString()
+            const message = parsedBody.split('=')[1]
+            fs.writeFile('message.txt',message, (err) => {
+                res.statusCode = 302
+                res.setHeader('Location', '/')
+                return res.end()
+            })
+        })
     }
-    res.end()
 })
 server.listen(4000)
