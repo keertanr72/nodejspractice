@@ -1,8 +1,11 @@
-// const fs = require('fs')
-
-// fs.writeFileSync('hello.txt','hello from node.js')
-
-const http = require('http')
-const routes = require('./routes')
-const server = http.createServer(routes)
-server.listen(4000)
+const express = require('express')
+const app = express()
+app.use((req, res, next) => {
+    console.log('in the middleware')
+    next()
+})
+app.use((req, res, next) => {
+    console.log('in the middleware')
+    res.send('<h1>Hello hello</h1>')
+})
+app.listen(4000)
